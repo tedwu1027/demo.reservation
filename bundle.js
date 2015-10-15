@@ -41313,7 +41313,26 @@ module.exports = React.createClass({
   componentWillMount: function componentWillMount() {
     this.x = d3.time.scale().range([0, this.props.width]);
     this.y = d3.scale.ordinal().rangeRoundBands([this.props.height, 0]);
-    this.xAxis = d3.svg.axis().scale(this.x).orient('bottom');
+
+    var formatter = d3.time.format.utc.multi([['.%L', function (d) {
+      return d.getUTCMilliseconds();
+    }], [':%S', function (d) {
+      return d.getUTCSeconds();
+    }], ['%I:%M', function (d) {
+      return d.getUTCMinutes();
+    }], ['%I %p', function (d) {
+      return d.getUTCHours();
+    }], ['%a %d', function (d) {
+      return d.getUTCDay() && d.getUTCDate() !== 1;
+    }], ['%b %d', function (d) {
+      return d.getUTCDate() !== 1;
+    }], ['%B', function (d) {
+      return d.getUTCMonth();
+    }], ['%Y', function () {
+      return true;
+    }]]);
+
+    this.xAxis = d3.svg.axis().scale(this.x).orient('bottom').tickFormat(formatter);
     this.yAxis = d3.svg.axis().scale(this.y).orient('left');
   },
   render: function render() {
@@ -41328,8 +41347,7 @@ module.exports = React.createClass({
     var tables = _props.tables;
     var reservations = _props.reservations;
 
-    // assuming [9:00,17:00) opening hour
-    this.x.domain([new Date(date + 'T09:00Z'), new Date(date + 'T17:00Z')]);
+    this.x.domain([new Date(date + 'T00:00Z'), new Date(date + 'T23:59:59Z')]);
     this.y.domain(pluckId(this.props.tables));
 
     var rect = [];
@@ -41483,7 +41501,6 @@ module.exports = React.createClass({
 });
 
 },{"elemental":6,"ramda":56,"react":219}],223:[function(require,module,exports){
-// const tz = require('timezone/loaded')
 'use strict';
 
 var React = require('react');
@@ -41507,7 +41524,7 @@ var fixture = {
   reservations: [{ id: '111111', table_id: 'cifq94wdn00007zrltzlqfg3u', timerange: { lower: '2015-11-01T10:00Z', upper: '2015-11-01T11:00Z', bounds: '(]' } }, { id: '222222', table_id: 'cifq94wdo00017zrlrjt70bts', timerange: { lower: '2015-11-01T13:00Z', upper: '2015-11-01T15:00Z', bounds: '(]' } }]
 };
 
-// business logic
+// business logic & main view
 module.exports = React.createClass({
   displayName: 'exports',
 
@@ -41560,8 +41577,7 @@ module.exports = React.createClass({
 
     // FIXME bind remote state to view
     this.setState({ reservations: fixture.reservations });
-    // const { util, restaurantId } = this.props
-    // this.bindAsArray(util.reservation.query(restaurantId, date), 'reservations')
+    // this.bindAsArray(util.reservation.query(/* restaurantId */, /* date string */), 'reservations')
   },
   componentWillMount: function componentWillMount() {
     var _props = this.props;
@@ -41650,7 +41666,7 @@ var enqueue = function enqueue(ref, task) {
         if (!progress) {
           return;
         }
-        debug('task progress %j', progress);
+        debug('task progress %s', progress._state);
         if (/_done$/.test(progress._state)) {
           resolve(progress);
         } else if (progress._state === 'error') {

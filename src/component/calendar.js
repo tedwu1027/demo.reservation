@@ -27,7 +27,19 @@ module.exports = React.createClass({
   componentWillMount () {
     this.x = d3.time.scale().range([0, this.props.width])
     this.y = d3.scale.ordinal().rangeRoundBands([this.props.height, 0])
-    this.xAxis = d3.svg.axis().scale(this.x).orient('bottom')
+
+    const formatter = d3.time.format.utc.multi([
+      ['.%L', d => d.getUTCMilliseconds()],
+      [':%S', d => d.getUTCSeconds()],
+      ['%I:%M', d => d.getUTCMinutes()],
+      ['%I %p', d => d.getUTCHours()],
+      ['%a %d', d => d.getUTCDay() && d.getUTCDate() !== 1],
+      ['%b %d', d => d.getUTCDate() !== 1],
+      ['%B', d => d.getUTCMonth()],
+      ['%Y', () => true]
+    ])
+
+    this.xAxis = d3.svg.axis().scale(this.x).orient('bottom').tickFormat(formatter)
     this.yAxis = d3.svg.axis().scale(this.y).orient('left')
   },
   render () {
