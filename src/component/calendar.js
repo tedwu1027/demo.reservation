@@ -34,8 +34,7 @@ module.exports = React.createClass({
     // rendering chart using D3.js
     const { date, width, height, margin, tables, reservations } = this.props
 
-    // assuming [9:00,17:00) opening hour
-    this.x.domain([new Date(`${date}T09:00Z`), new Date(`${date}T17:00Z`)])
+    this.x.domain([new Date(`${date}T00:00Z`), new Date(`${date}T23:59:59Z`)])
     this.y.domain(pluckId(this.props.tables))
 
     let rect = []

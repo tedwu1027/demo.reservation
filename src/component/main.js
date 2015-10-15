@@ -1,4 +1,3 @@
-// const tz = require('timezone/loaded')
 const React = require('react')
 const elemental = require('elemental')
 const ReactFireMixin = require('reactfire')
