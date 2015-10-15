@@ -9,14 +9,6 @@ const CreateReservation = require('./createReservation')
 // ignore this, not suitable for production
 const { Container, Row, Col, Form, FormField, FormInput } = elemental
 
-// FIXME replace this with real data
-const fixture = {
-  reservations: [
-    { id: '111111', table_id: 'cifq94wdn00007zrltzlqfg3u', timerange: { lower: '2015-11-01T10:00Z', upper: '2015-11-01T11:00Z', bounds: '(]' } },
-    { id: '222222', table_id: 'cifq94wdo00017zrlrjt70bts', timerange: { lower: '2015-11-01T13:00Z', upper: '2015-11-01T15:00Z', bounds: '(]' } }
-  ]
-}
-
 // business logic & main view
 module.exports = React.createClass({
   mixins: [ReactFireMixin],
@@ -49,7 +41,7 @@ module.exports = React.createClass({
     util.reservation.create(tableId, timerange)
                     .then(() => debug('successful reservation'))
                     .catch(e => debug('failed creating reservation', e.message || e))
-                    // FIXME error handling & unlock form action button
+                    .then(() => this.setState({ working: false }))
   },
   bindReservations (date = this.state.date, unbind = false) {
     debug('bindReservations %s', date)
@@ -57,9 +49,8 @@ module.exports = React.createClass({
       this.unbind('reservations')
     }
 
-    // FIXME bind remote state to view
-    this.setState({ reservations: fixture.reservations })
-    // this.bindAsArray(util.reservation.query(/* restaurantId */, /* date string */), 'reservations')
+    const { util, restaurantId } = this.props
+    this.bindAsArray(util.reservation.query(restaurantId, date), 'reservations')
   },
   componentWillMount () {
     const { util, restaurantId } = this.props
