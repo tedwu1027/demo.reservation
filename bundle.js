@@ -41519,11 +41519,6 @@ var Form = elemental.Form;
 var FormField = elemental.FormField;
 var FormInput = elemental.FormInput;
 
-// FIXME replace this with real data
-var fixture = {
-  reservations: [{ id: '111111', table_id: 'cifq94wdn00007zrltzlqfg3u', timerange: { lower: '2015-11-01T10:00Z', upper: '2015-11-01T11:00Z', bounds: '(]' } }, { id: '222222', table_id: 'cifq94wdo00017zrlrjt70bts', timerange: { lower: '2015-11-01T13:00Z', upper: '2015-11-01T15:00Z', bounds: '(]' } }]
-};
-
 // business logic & main view
 module.exports = React.createClass({
   displayName: 'exports',
@@ -41550,6 +41545,8 @@ module.exports = React.createClass({
     }
   },
   createReservation: function createReservation(_ref) {
+    var _this = this;
+
     var tableId = _ref.tableId;
     var timerange = _ref.timerange;
     var util = this.props.util;
@@ -41563,8 +41560,9 @@ module.exports = React.createClass({
       return debug('successful reservation');
     })['catch'](function (e) {
       return debug('failed creating reservation', e.message || e);
+    }).then(function () {
+      return _this.setState({ working: false });
     });
-    // FIXME error handling & unlock form action button
   },
   bindReservations: function bindReservations() {
     var date = arguments.length <= 0 || arguments[0] === undefined ? this.state.date : arguments[0];
@@ -41575,14 +41573,16 @@ module.exports = React.createClass({
       this.unbind('reservations');
     }
 
-    // FIXME bind remote state to view
-    this.setState({ reservations: fixture.reservations });
-    // this.bindAsArray(util.reservation.query(/* restaurantId */, /* date string */), 'reservations')
-  },
-  componentWillMount: function componentWillMount() {
     var _props = this.props;
     var util = _props.util;
     var restaurantId = _props.restaurantId;
+
+    this.bindAsArray(util.reservation.query(restaurantId, date), 'reservations');
+  },
+  componentWillMount: function componentWillMount() {
+    var _props2 = this.props;
+    var util = _props2.util;
+    var restaurantId = _props2.restaurantId;
 
     this.bindAsArray(util.table.query(restaurantId), 'tables');
     this.bindReservations();
