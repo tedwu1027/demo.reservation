@@ -1,15 +1,15 @@
 source := $(shell find src -name '*.js')
 
-.PHONY: seed test clean
+.PHONY: test browser clean
 
 bundle.js: $(source)
 	npm run build
 
-seed:
-	node bin/seed.js
-
 test:
 	npm test
+
+browser:
+	npm run browser
 
 clean:
 	rm bundle.js

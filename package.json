@@ -10,7 +10,8 @@
     "prebuild": "standard",
     "build": "browserify -t babelify src/index.js -o bundle.js",
     "lint": "standard",
-    "test": "zuul --local 8080 -- test/index.js"
+    "test": "zuul --local 8080 -- test/index.js",
+    "browser": "zuul -- test/index.js"
   },
   "repository": {
     "type": "git",
