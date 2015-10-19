@@ -4,3 +4,8 @@ browserify:
       name: babelify
       plugins:
         - babel-plugin-espower
+browsers:
+  - name: chrome
+    version: latest
+  - name: safari
+    version: latest
