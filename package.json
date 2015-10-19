@@ -7,9 +7,12 @@
     "test": "test"
   },
   "scripts": {
+    "prestart": "make",
+    "start": "node server.js",
     "prebuild": "standard",
-    "build": "browserify -t babelify src/index.js -o bundle.js",
+    "build": "browserify -t babelify src/index.js -o public/bundle.js",
     "lint": "standard",
+    "pretest": "standard",
     "test": "zuul --local 8080 -- test/index.js",
     "browser": "zuul -- test/index.js"
   },
@@ -29,6 +32,8 @@
     "elemental": "^0.5.0",
     "firebase": "^2.3.1",
     "isodate-convert": "^0.1.0",
+    "koa": "^1.1.0",
+    "koa-static": "^1.5.1",
     "ramda": "^0.18.0",
     "react": "^0.14.0",
     "react-addons-css-transition-group": "^0.14.0",

@@ -45,6 +45,10 @@ module.exports = (uri) => {
       const _state = 'create_reservation_enqueued'
       return enqueue(queueRef, { _state, table_id: tableId, timerange })
     },
+    modify (reservationId, tableId, timerange) {
+      const _state = 'modify_reservation_enqueued'
+      return enqueue(queueRef, { _state, id: reservationId, table_id: tableId, timerange })
+    },
     query (restaurantId, date) {
       // sample hexastore index see http://www.vldb.org/pvldb/1/1453965.pdf
       // [restaurantId]::[lower timerange]::[tableId]
