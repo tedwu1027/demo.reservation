@@ -1,7 +1,8 @@
-/* global describe, before, beforeEach, it */
+/* global MouseEvent, describe, before, beforeEach, it */
 const React = require('react')
 const sinon = require('sinon')
 const Emitter = require('events')
+const ReactDOM = require('react-dom')
 const assert = require('power-assert')
 const connect = require('../src/util')
 const testUtils = require('react-addons-test-utils')
@@ -9,12 +10,12 @@ const Calendar = require('../src/component/calendar')
 const CreateReservation = require('../src/component/createReservation')
 
 describe('component', () => {
-  describe('Calendar', () => {
-    let sandbox
-    beforeEach(() => {
-      sandbox = testUtils.createRenderer()
-    })
+  let sandbox
+  beforeEach(() => {
+    sandbox = document.createElement('div')
+  })
 
+  describe('Calendar', () => {
     const fixture = {
       tables: [
         { id: 'cifqjz69w0000klrl85dbgsxv' },
@@ -27,36 +28,42 @@ describe('component', () => {
       ]
     }
 
-    it('should render without reservation', () => {
-      sandbox.render(<Calendar date='2015-01-01' />)
-      const svg = sandbox.getRenderOutput()
-      assert(svg)
-      assert(svg.type === 'svg')
-      const g = svg.props.children
-      assert(g)
-      assert(g.type === 'g')
+    const raise = (el, type, options) => {
+      const e = new MouseEvent(type, options)
+      el.dispatchEvent(e)
+    }
 
-      const [xAxis, yAxis, rects] = g.props.children
-      assert(xAxis)
-      assert(yAxis)
+    it('should render without reservation', () => {
+      ReactDOM.render(<Calendar date='2015-01-01' />, sandbox)
+      const rects = sandbox.querySelectorAll('rect')
       assert(rects)
       assert(rects.length === 0)
     })
 
     it('should render reservations', () => {
-      sandbox.render(<Calendar date='2015-01-01' tables={fixture.tables} reservations={fixture.reservations} />)
-      const svg = sandbox.getRenderOutput()
-      assert(svg)
-      assert(svg.type === 'svg')
-      const g = svg.props.children
-      assert(g)
-      assert(g.type === 'g')
-
-      const [xAxis, yAxis, rects] = g.props.children
-      assert(xAxis)
-      assert(yAxis)
+      ReactDOM.render(<Calendar date='2015-01-01' />, sandbox)
+      // update props to render chart
+      ReactDOM.render(<Calendar date='2015-01-01' tables={fixture.tables} reservations={fixture.reservations} />, sandbox)
+      const rects = sandbox.querySelectorAll('rect')
       assert(rects)
       assert(rects.length === 2)
+    })
+
+    // FIXME remove the `.skip` flag to run the test case
+    it.skip('should respond to drag events', () => {
+      const callback = () => { console.log('called') }
+      ReactDOM.render(<Calendar date='2015-01-01' onDrag={callback} />, sandbox)
+      // update props to render chart
+      ReactDOM.render(<Calendar date='2015-01-01' tables={fixture.tables} reservations={fixture.reservations} onDrag={callback} />, sandbox)
+      const rects = sandbox.querySelectorAll('rect')
+
+      // drag is quite tricky to simulate
+      raise(rects[0], 'mousedown')
+      raise(window, 'mousemove')
+      raise(window, 'mouseup')
+
+      // FIXME how do we test if the callback is called once?
+      // hint, see http://sinonjs.org
     })
   })
 
@@ -102,8 +109,43 @@ describe('component', () => {
       assert(submitButton.disabled)
     })
 
-    // FIXME write some tests
-    it('should validate inputs')
+    it('should respond to inputs', () => {
+      const callback = sinon.spy()
+      const component = testUtils.renderIntoDocument(<CreateReservation tables={fixture.tables} onSubmit={callback} />)
+      const [lower, upper] = testUtils.scryRenderedDOMComponentsWithTag(component, 'input')
+      const submitButton = testUtils.findRenderedDOMComponentWithTag(component, 'button')
+
+      // simulate dropdown selection
+      component.setTable('cifqjz69w0000klrl85dbgsxv')
+
+      // simulate time selection
+      testUtils.Simulate.change(lower, { target: { name: 'ui-reservation-timerange-lower', value: '2015-12-01T11:00' } })
+      testUtils.Simulate.change(upper, { target: { name: 'ui-reservation-timerange-upper', value: '2015-12-01T12:00' } })
+
+      assert(callback.called === false)
+      testUtils.Simulate.click(submitButton)
+      assert(callback.calledOnce)
+
+      const { args } = callback.getCall(0)
+      assert(args[0].tableId === 'cifqjz69w0000klrl85dbgsxv')
+      assert(args[0].timerange.lower === '2015-12-01T11:00')
+      assert(args[0].timerange.upper === '2015-12-01T12:00')
+    })
+
+    // FIXME remove the `.skip` flag to run the test case
+    it.skip('should validate inputs', () => {
+      const callback = sinon.spy()
+      // note that the timerange is invalid i.e. the lower value is higher than the uuper value
+      const component = testUtils.renderIntoDocument(<CreateReservation lower='2015-11-01T12:00' upper='2015-11-01T11:00' tables={fixture.tables} onSubmit={callback} />)
+      const submitButton = testUtils.findRenderedDOMComponentWithTag(component, 'button')
+
+      // simulate dropdown selection
+      component.setTable('cifqjz69w0000klrl85dbgsxv')
+
+      assert(callback.called === false)
+      testUtils.Simulate.click(submitButton)
+      assert(callback.called === false)
+    })
   })
 })
 

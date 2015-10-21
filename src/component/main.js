@@ -35,13 +35,17 @@ module.exports = React.createClass({
     const { util } = this.props
     debug('creating reservation for %s from %s to %s', tableId, timerange.lower, timerange.upper)
 
-    // TODO validate timerange e.g. timerange.upper > timerange.lower
+    // FIXME validate timerange e.g. timerange.upper > timerange.lower
 
     this.setState({ working: true })
     util.reservation.create(tableId, timerange)
                     .then(() => debug('successful reservation'))
                     .catch(e => debug('failed creating reservation', e.message || e))
                     .then(() => this.setState({ working: false }))
+  },
+  modifyReservation (obj) {
+    this.props.util.reservation.modify(obj.reservationId, obj.tableId, obj.timerange)
+    // FIXME Error handling. It should reset chart upon error.
   },
   bindReservations (date = this.state.date, unbind = false) {
     debug('bindReservations %s', date)
@@ -77,7 +81,7 @@ module.exports = React.createClass({
           </Col>
         </Row>
         <Row>
-          <Calendar date={date} tables={tables} reservations={reservations} />
+          <Calendar date={date} tables={tables} reservations={reservations} onDrag={this.modifyReservation}/>
         </Row>
       </Container>
     )

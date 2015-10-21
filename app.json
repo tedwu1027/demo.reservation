@@ -1,0 +1,12 @@
+{
+  "name": "demo.reservation",
+  "description": "deployment environments demo",
+  "website": "https://www.eztable.com",
+  "repository": "https://github.com/hden/demo.reservation",
+  "logo": "http://static.tumblr.com/5a3875bb54b5cfbde761d083444735b1/pakxml9/lM4nhaury/tumblr_static_57be7f1d5sw0o8sgg8gwg844c.png",
+  "success_url": "/",
+  "image": "heroku/nodejs",
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
