@@ -5,6 +5,7 @@ const Emitter = require('events')
 const ReactDOM = require('react-dom')
 const assert = require('power-assert')
 const connect = require('../src/util')
+const Main = require('../src/component/main')
 const testUtils = require('react-addons-test-utils')
 const Calendar = require('../src/component/calendar')
 const CreateReservation = require('../src/component/createReservation')
@@ -145,6 +146,74 @@ describe('component', () => {
       assert(callback.called === false)
       testUtils.Simulate.click(submitButton)
       assert(callback.called === false)
+    })
+  })
+
+  describe('Main', () => {
+    const restaurantId = 'cig1nudn6000081rljv6aexe3'
+
+    let util
+    beforeEach(() => {
+      util = connect('https://lambda.firebaseio.com/')
+    })
+
+    it('should set date')
+
+    it('should create reservation', (done) => {
+      const stub = sinon.stub(util.reservation, 'create', () => {
+        return Promise.resolve({ reservation_id: 'cig1o5gn9000091rlfcfghgvz', ref: 'https://lambda.firebaseio.com/reservation/cig1o5gn9000091rlfcfghgvz' })
+      })
+      const tree = ReactDOM.render(<Main util={util} restaurantId={restaurantId} />, sandbox)
+      const form = testUtils.findRenderedComponentWithType(tree, CreateReservation)
+      const [lower, upper] = testUtils.scryRenderedDOMComponentsWithTag(form, 'input')
+      const submitButton = testUtils.findRenderedDOMComponentWithTag(form, 'button')
+
+      // simulate dropdown selection
+      form.setTable('cifqjz69w0000klrl85dbgsxv')
+
+      // simulate time selection
+      testUtils.Simulate.change(lower, { target: { name: 'ui-reservation-timerange-lower', value: '2015-12-01T11:00' } })
+      testUtils.Simulate.change(upper, { target: { name: 'ui-reservation-timerange-upper', value: '2015-12-01T12:00' } })
+      testUtils.Simulate.click(submitButton)
+
+      // check if the form is locked
+      assert(submitButton.disabled)
+
+      // asynchronously test UI response
+      process.nextTick(() => {
+        assert(stub.calledOnce)
+
+        // FIXME test callback arguments
+        // const { args } = stub.getCall(0)
+
+        // FIXME check if the form is unlocked
+        done()
+      })
+    })
+
+    it('should modify reservation', (done) => {
+      const reservationId = 'cig1o5gn9000091rlfcfghgvz'
+      const tableId = 'cig1pi5vb000191rl2vuprmlp'
+      const timerange = { lower: '2015-12-01T11:00', upper: '2015-12-01T12:00' }
+      const ref = 'https://lambda.firebaseio.com/reservation/cig1o5gn9000091rlfcfghgvz'
+
+      const stub = sinon.stub(util.reservation, 'modify', () => {
+        return Promise.resolve({ reservation_id: reservationId, ref })
+      })
+
+      const tree = ReactDOM.render(<Main util={util} restaurantId={restaurantId} />, sandbox)
+      const chart = testUtils.findRenderedComponentWithType(tree, Calendar)
+
+      // since drag event is tested elsewhere, lets skip drag simulation and invoke onDrag directly
+      chart.props.onDrag({ reservationId, tableId, timerange })
+
+      process.nextTick(() => {
+        assert(stub.calledOnce)
+
+        // FIXME test callback arguments
+
+        done()
+      })
     })
   })
 })
