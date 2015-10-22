@@ -47,7 +47,7 @@ module.exports = React.createClass({
   },
   handleSubmit () {
     const { tableId, lower, upper } = this.state
-    if (tableId) {
+    if (tableId && (new Date(upper) > new Date(lower))) {
       this.props.onSubmit({ tableId, timerange: { lower, upper } })
     }
   },

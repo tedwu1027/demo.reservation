@@ -35,8 +35,6 @@ module.exports = React.createClass({
     const { util } = this.props
     debug('creating reservation for %s from %s to %s', tableId, timerange.lower, timerange.upper)
 
-    // FIXME validate timerange e.g. timerange.upper > timerange.lower
-
     this.setState({ working: true })
     util.reservation.create(tableId, timerange)
                     .then(() => debug('successful reservation'))
@@ -45,7 +43,10 @@ module.exports = React.createClass({
   },
   modifyReservation (obj) {
     this.props.util.reservation.modify(obj.reservationId, obj.tableId, obj.timerange)
-    // FIXME Error handling. It should reset chart upon error.
+        .catch(() => {
+          debug('reset chart')
+          this.forceUpdate()
+        })
   },
   bindReservations (date = this.state.date, unbind = false) {
     debug('bindReservations %s', date)

@@ -50,9 +50,8 @@ describe('component', () => {
       assert(rects.length === 2)
     })
 
-    // FIXME remove the `.skip` flag to run the test case
-    it.skip('should respond to drag events', () => {
-      const callback = () => { console.log('called') }
+    it('should respond to drag events', () => {
+      const callback = sinon.spy()
       ReactDOM.render(<Calendar date='2015-01-01' onDrag={callback} />, sandbox)
       // update props to render chart
       ReactDOM.render(<Calendar date='2015-01-01' tables={fixture.tables} reservations={fixture.reservations} onDrag={callback} />, sandbox)
@@ -63,8 +62,12 @@ describe('component', () => {
       raise(window, 'mousemove')
       raise(window, 'mouseup')
 
-      // FIXME how do we test if the callback is called once?
-      // hint, see http://sinonjs.org
+      assert(callback.calledOnce)
+      const { args } = callback.getCall(0)
+      assert(args[0].reservationId === '111111')
+      assert(args[0].tableId === 'cifqjz7eg0002klrlxlo3yp92')
+      assert(args[0].timerange.lower)
+      assert(args[0].timerange.upper)
     })
   })
 
@@ -133,8 +136,7 @@ describe('component', () => {
       assert(args[0].timerange.upper === '2015-12-01T12:00')
     })
 
-    // FIXME remove the `.skip` flag to run the test case
-    it.skip('should validate inputs', () => {
+    it('should validate inputs', () => {
       const callback = sinon.spy()
       // note that the timerange is invalid i.e. the lower value is higher than the uuper value
       const component = testUtils.renderIntoDocument(<CreateReservation lower='2015-11-01T12:00' upper='2015-11-01T11:00' tables={fixture.tables} onSubmit={callback} />)
@@ -157,7 +159,18 @@ describe('component', () => {
       util = connect('https://lambda.firebaseio.com/')
     })
 
-    it('should set date')
+    it('should set date', () => {
+      const spy = sinon.spy(util.reservation, 'query')
+      const main = ReactDOM.render(<Main util={util} restaurantId={restaurantId} />, sandbox)
+      assert(spy.calledOnce)
+
+      main.setDate({ target: { value: '2010-01-01' } })
+
+      assert(spy.calledTwice)
+      const { args } = spy.getCall(1)
+      assert(args[0] === restaurantId)
+      assert(args[1] === '2010-01-01')
+    })
 
     it('should create reservation', (done) => {
       const stub = sinon.stub(util.reservation, 'create', () => {
@@ -183,10 +196,11 @@ describe('component', () => {
       process.nextTick(() => {
         assert(stub.calledOnce)
 
-        // FIXME test callback arguments
-        // const { args } = stub.getCall(0)
+        const { args } = stub.getCall(0)
+        assert(args[0] === 'cifqjz69w0000klrl85dbgsxv')
+        assert.deepEqual(args[1], { lower: '2015-12-01T11:00', upper: '2015-12-01T12:00' })
 
-        // FIXME check if the form is unlocked
+        assert(!submitButton.disabled)
         done()
       })
     })
@@ -210,7 +224,10 @@ describe('component', () => {
       process.nextTick(() => {
         assert(stub.calledOnce)
 
-        // FIXME test callback arguments
+        const { args } = stub.getCall(0)
+        assert(args[0] === reservationId)
+        assert(args[1] === tableId)
+        assert(args[2] === timerange)
 
         done()
       })

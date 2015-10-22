@@ -83,20 +83,27 @@ module.exports = React.createClass({
                     .on('dragend', dragended)
   },
   componentDidUpdate () {
+    debug('render via D3.js')
     this.xAxis.scale(this.x)
     this.yAxis.scale(this.y)
     d3.select(this.refs.xAxis).call(this.xAxis)
     d3.select(this.refs.yAxis).call(this.yAxis)
 
     if (this.props.tables.length > 0 && this.refs.rects) {
-      d3.select(this.refs.rects).selectAll('rect').data(decode(this.props.reservations))
-        .enter().append('rect')
-        .attr('class', 'rect')
-        .attr('x', d => this.x(d.timerange.lower))
-        .attr('y', d => this.y(d.table_id))
-        .attr('width', d => this.x(d.timerange.upper) - this.x(d.timerange.lower))
-        .attr('height', this.y.rangeBand())
-        .call(this.drag)
+      const rect = d3.select(this.refs.rects).selectAll('rect').data(decode(this.props.reservations))
+
+      rect.attr('x', d => this.x(d.timerange.lower))
+          .attr('y', d => this.y(d.table_id))
+          .attr('width', d => this.x(d.timerange.upper) - this.x(d.timerange.lower))
+          .attr('height', this.y.rangeBand())
+
+      rect.enter().append('rect')
+          .attr('class', 'rect')
+          .attr('x', d => this.x(d.timerange.lower))
+          .attr('y', d => this.y(d.table_id))
+          .attr('width', d => this.x(d.timerange.upper) - this.x(d.timerange.lower))
+          .attr('height', this.y.rangeBand())
+          .call(this.drag)
     }
   },
   render () {
