@@ -10,6 +10,7 @@ const debug = require('debug')('demo:index')
 localStorage.debug = 'demo:*'
 
 // fixtures, things that is not important for this demo
+
 const util = connect('https://lambda.firebaseio.com/')
 const restaurantId = 'cifp8gz1300001krlxtl74ygf'
 debug('using restaurantId %s', restaurantId)
