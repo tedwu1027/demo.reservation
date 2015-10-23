@@ -51,8 +51,9 @@ describe('component', () => {
     })
 
     // FIXME remove the `.skip` flag to run the test case
-    it.skip('should respond to drag events', () => {
-      const callback = () => { console.log('called') }
+    it('should respond to drag events', () => {
+      // const callback = () => { console.log('called') }
+      const callback = sinon.spy()
       ReactDOM.render(<Calendar date='2015-01-01' onDrag={callback} />, sandbox)
       // update props to render chart
       ReactDOM.render(<Calendar date='2015-01-01' tables={fixture.tables} reservations={fixture.reservations} onDrag={callback} />, sandbox)
@@ -63,6 +64,7 @@ describe('component', () => {
       raise(window, 'mousemove')
       raise(window, 'mouseup')
 
+      assert(callback.calledOnce)
       // FIXME how do we test if the callback is called once?
       // hint, see http://sinonjs.org
     })
